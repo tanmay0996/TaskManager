@@ -4,10 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, ListTodo, Sparkles, AlertCircle } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setTasks, addTask, updateTask, removeTask } from '../store/tasksSlice.js';
+import { useNavigate } from 'react-router-dom';
 
 import { z } from 'zod';
 import api from '../utils/api.js';
-import {TaskItem} from '../components/TaskItem.jsx';
+import { TaskItem } from '../components/TaskItem.jsx';
 
 // Zod validation schema
 const taskSchema = z.object({
@@ -22,29 +23,45 @@ const taskSchema = z.object({
 
 export default function Tasks() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const tasks = useSelector((state) => state.tasks.items);
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
-
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
+
+  const handleAuthError = (err) => {
+    if (err?.response?.status === 401) {
+      try {
+        localStorage.removeItem('token');
+      } catch {
+        // ignore in non-browser/test env
+      }
+      navigate('/login');
+      return true;
+    }
+    return false;
+  };
 
   const loadTasks = async () => {
     try {
       const res = await api.get('/tasks');
       dispatch(setTasks(res.data || []));
     } catch (err) {
+      if (handleAuthError(err)) return;
       setError('Failed to load tasks');
     }
   };
 
   useEffect(() => {
     loadTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAdd = async (e) => {
-    e.preventDefault();
+    if (e?.preventDefault) e.preventDefault();
     setError('');
     setFieldErrors({});
 
@@ -54,12 +71,16 @@ export default function Tasks() {
     } catch (err) {
       if (err instanceof z.ZodError) {
         const errors = {};
-        err.errors.forEach((error) => {
-          errors[error.path[0]] = error.message;
+        const issues = err.issues ?? err.errors ?? [];
+        issues.forEach((issue) => {
+          const key = issue.path && issue.path.length ? issue.path[0] : 'title';
+          errors[key] = issue.message || 'Invalid value';
         });
         setFieldErrors(errors);
         return;
       }
+      console.error('Validation error', err);
+      return;
     }
 
     setLoading(true);
@@ -69,6 +90,7 @@ export default function Tasks() {
       setTitle('');
       setDescription('');
     } catch (err) {
+      if (handleAuthError(err)) return;
       setError('Failed to create task');
     } finally {
       setLoading(false);
@@ -80,7 +102,8 @@ export default function Tasks() {
       const newStatus = task.status === 'completed' ? 'pending' : 'completed';
       const res = await api.put(`/tasks/${task._id}`, { status: newStatus });
       dispatch(updateTask(res.data));
-    } catch {
+    } catch (err) {
+      if (handleAuthError(err)) return;
       setError('Failed to update task');
     }
   };
@@ -89,7 +112,8 @@ export default function Tasks() {
     try {
       await api.delete(`/tasks/${task._id}`);
       dispatch(removeTask(task._id));
-    } catch {
+    } catch (err) {
+      if (handleAuthError(err)) return;
       setError('Failed to delete task');
     }
   };
