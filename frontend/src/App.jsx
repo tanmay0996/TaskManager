@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ListTodo, LogIn, UserPlus, LogOut, Sparkles } from 'lucide-react';
+import { Zap, LogIn, UserPlus, LogOut, Sparkles } from 'lucide-react';
 import Register from './pages/Register.jsx';
 import Login from './pages/Login.jsx';
 import Tasks from './pages/Tasks.jsx';
@@ -40,11 +40,11 @@ function Nav() {
           {/* Logo Section */}
           <Link to="/" className="flex items-center gap-3 group">
             <motion.div
-              whileHover={{ rotate: 360 }}
-              transition={{ duration: 0.5 }}
-              className="bg-gradient-to-br from-purple-500 to-pink-500 p-2 rounded-lg"
+              whileHover={{ rotate: 360, scale: 1.1 }}
+              transition={{ duration: 0.5, type: "spring" }}
+              className="bg-gradient-to-br from-purple-500 to-pink-500 p-2.5 rounded-xl shadow-lg"
             >
-              <ListTodo className="w-6 h-6 text-white" />
+              <Zap className="w-6 h-6 text-white" fill="white" />
             </motion.div>
             <div className="flex items-center gap-2">
               <span className="text-xl font-bold text-white group-hover:text-purple-200 transition-colors">
