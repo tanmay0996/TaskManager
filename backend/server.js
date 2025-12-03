@@ -37,16 +37,20 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start server after DB connection
-mongoose
-  .connect(MONGO_URI, {})
-  .then(() => {
-    console.log('Connected to MongoDB');
-    app.listen(PORT, () => {
-      console.log(`Server listening on port ${PORT}`);
+// Start server after DB connection (skip when running tests)
+if (process.env.NODE_ENV !== 'test') {
+  mongoose
+    .connect(MONGO_URI, {})
+    .then(() => {
+      console.log('Connected to MongoDB');
+      app.listen(PORT, () => {
+        console.log(`Server listening on port ${PORT}`);
+      });
+    })
+    .catch((err) => {
+      console.error('MongoDB connection error:', err);
+      process.exit(1);
     });
-  })
-  .catch((err) => {
-    console.error('MongoDB connection error:', err);
-    process.exit(1);
-  });
+}
+
+module.exports = app;
