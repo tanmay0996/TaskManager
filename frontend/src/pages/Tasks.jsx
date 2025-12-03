@@ -1,11 +1,14 @@
-// Tasks.jsx - Main Component (Standalone Version)
+// Tasks.jsx - Main Component using Redux Toolkit for tasks state
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, ListTodo, Sparkles, AlertCircle } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { setTasks, addTask, updateTask, removeTask } from '../store/tasksSlice.js';
 
 import { z } from 'zod';
 import api from '../utils/api.js';
 import {TaskItem} from '../components/TaskItem.jsx';
+
 // Zod validation schema
 const taskSchema = z.object({
   title: z.string()
@@ -18,17 +21,19 @@ const taskSchema = z.object({
 });
 
 export default function Tasks() {
-  const [tasks, setTasks] = useState([]);
+  const dispatch = useDispatch();
+  const tasks = useSelector((state) => state.tasks.items);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
 
   const loadTasks = async () => {
     try {
       const res = await api.get('/tasks');
-      setTasks(res.data || []);
+      dispatch(setTasks(res.data || []));
     } catch (err) {
       setError('Failed to load tasks');
     }
@@ -60,7 +65,7 @@ export default function Tasks() {
     setLoading(true);
     try {
       const res = await api.post('/tasks', { title, description });
-      setTasks([...tasks, res.data]);
+      dispatch(addTask(res.data));
       setTitle('');
       setDescription('');
     } catch (err) {
@@ -74,7 +79,7 @@ export default function Tasks() {
     try {
       const newStatus = task.status === 'completed' ? 'pending' : 'completed';
       const res = await api.put(`/tasks/${task._id}`, { status: newStatus });
-      setTasks(tasks.map(t => t._id === task._id ? res.data : t));
+      dispatch(updateTask(res.data));
     } catch {
       setError('Failed to update task');
     }
@@ -83,7 +88,7 @@ export default function Tasks() {
   const handleDelete = async (task) => {
     try {
       await api.delete(`/tasks/${task._id}`);
-      setTasks(tasks.filter(t => t._id !== task._id));
+      dispatch(removeTask(task._id));
     } catch {
       setError('Failed to delete task');
     }
