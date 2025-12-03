@@ -29,18 +29,36 @@ export default function Register() {
     setError('');
     setFieldErrors({});
 
-    // Zod validation
+    // 1) Manual required + min-length validation (matches test expectations)
+    const manualErrors = {};
+    if (!username || username.length < 3) {
+      manualErrors.username = 'Username must be at least 3 characters';
+    }
+    if (!password || password.length < 6) {
+      manualErrors.password = 'Password must be at least 6 characters';
+    }
+
+    if (Object.keys(manualErrors).length > 0) {
+      setFieldErrors(manualErrors);
+      return;
+    }
+
+    // 2) Extra Zod validation (regex, max length, etc.)
     try {
       registerSchema.parse({ username, password });
     } catch (err) {
       if (err instanceof z.ZodError) {
         const errors = {};
-        err.errors.forEach((error) => {
-          errors[error.path[0]] = error.message;
+        const issues = err.issues ?? err.errors ?? [];
+        issues.forEach((issue) => {
+          const key = issue.path && issue.path.length ? issue.path[0] : 'username';
+          errors[key] = issue.message || 'Invalid value';
         });
         setFieldErrors(errors);
         return;
       }
+      console.error('Register validation error', err);
+      return;
     }
 
     setLoading(true);
@@ -67,7 +85,7 @@ export default function Register() {
           transition={{
             duration: 8,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: 'easeInOut',
           }}
         />
         <motion.div
@@ -79,7 +97,7 @@ export default function Register() {
           transition={{
             duration: 10,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: 'easeInOut',
           }}
         />
       </div>
@@ -94,7 +112,7 @@ export default function Register() {
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+          transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
           className="flex justify-center mb-6"
         >
           <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-4 rounded-full">
@@ -110,7 +128,7 @@ export default function Register() {
         >
           Create Account
         </motion.h2>
-        
+
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -128,12 +146,16 @@ export default function Register() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <label className="block text-sm font-medium text-purple-200 mb-2">
+            <label
+              htmlFor="register-username"
+              className="block text-sm font-medium text-purple-200 mb-2"
+            >
               Username
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-purple-300" />
               <input
+                id="register-username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -159,12 +181,16 @@ export default function Register() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <label className="block text-sm font-medium text-purple-200 mb-2">
+            <label
+              htmlFor="register-password"
+              className="block text-sm font-medium text-purple-200 mb-2"
+            >
               Password
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-purple-300" />
               <input
+                id="register-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -211,7 +237,7 @@ export default function Register() {
               <span className="flex items-center justify-center gap-2">
                 <motion.div
                   animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                   className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                 />
                 Registering...

@@ -35,12 +35,16 @@ export default function Login() {
     } catch (err) {
       if (err instanceof z.ZodError) {
         const errors = {};
-        err.errors.forEach((error) => {
-          errors[error.path[0]] = error.message;
+        const issues = err.issues ?? err.errors ?? [];
+        issues.forEach((issue) => {
+          const key = issue.path && issue.path.length ? issue.path[0] : 'username';
+          errors[key] = issue.message || 'Invalid value';
         });
         setFieldErrors(errors);
         return;
       }
+      console.error('Login validation error', err);
+      return;
     }
 
     setLoading(true);
@@ -74,7 +78,7 @@ export default function Login() {
           transition={{
             duration: 8,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: 'easeInOut',
           }}
         />
         <motion.div
@@ -86,7 +90,7 @@ export default function Login() {
           transition={{
             duration: 10,
             repeat: Infinity,
-            ease: "easeInOut"
+            ease: 'easeInOut',
           }}
         />
       </div>
@@ -101,7 +105,7 @@ export default function Login() {
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+          transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
           className="flex justify-center mb-6"
         >
           <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-4 rounded-full">
@@ -117,7 +121,7 @@ export default function Login() {
         >
           Welcome Back
         </motion.h1>
-        
+
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -135,12 +139,16 @@ export default function Login() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <label className="block text-sm font-medium text-purple-200 mb-2">
+            <label
+              htmlFor="login-username"
+              className="block text-sm font-medium text-purple-200 mb-2"
+            >
               Username
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-purple-300" />
               <input
+                id="login-username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -166,12 +174,16 @@ export default function Login() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <label className="block text-sm font-medium text-purple-200 mb-2">
+            <label
+              htmlFor="login-password"
+              className="block text-sm font-medium text-purple-200 mb-2"
+            >
               Password
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-purple-300" />
               <input
+                id="login-password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -218,7 +230,7 @@ export default function Login() {
               <span className="flex items-center justify-center gap-2">
                 <motion.div
                   animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                   className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                 />
                 Logging in...
