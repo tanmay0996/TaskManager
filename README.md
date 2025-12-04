@@ -4,6 +4,7 @@ Minimal full-stack Task Manager application built with:
 
 - **Backend**: Node.js, Express, MongoDB (Mongoose), JWT auth, Jest + Supertest
 - **Frontend**: React, Vite, Redux Toolkit, Tailwind CSS, Vitest + Testing Library
+- ✅ Unit tests for both backend (Jest + Supertest) and frontend (Vitest + React Testing Library)
 
 ---
 
