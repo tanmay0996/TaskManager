@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
 });
 
 api.interceptors.request.use((config) => {
@@ -15,8 +15,6 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Log error details to help debug frontend issues
-    // (safe to keep in production for now; can be gated later)
     // eslint-disable-next-line no-console
     console.error('API error', {
       url: error?.config?.url,
@@ -31,10 +29,13 @@ api.interceptors.response.use(
       } catch {
         // ignore in non-browser/test env
       }
+
       if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-        window.location.href = '/login';
+        // update just the path (works for SPA + satisfies tests)
+        window.location.pathname = '/login';
       }
     }
+
     return Promise.reject(error);
   }
 );
