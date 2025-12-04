@@ -29,7 +29,7 @@ export default function Register() {
     setError('');
     setFieldErrors({});
 
-    // 1) Manual required + min-length validation (matches test expectations)
+    // 1) Manual required + min-length validation (matches UX/test expectations)
     const manualErrors = {};
     if (!username || username.length < 3) {
       manualErrors.username = 'Username must be at least 3 characters';
@@ -57,16 +57,28 @@ export default function Register() {
         setFieldErrors(errors);
         return;
       }
-      console.error('Register validation error', err);
+      // eslint-disable-next-line no-console
+      console.error('Register validation error (non-Zod)', err);
+      setError('Unexpected validation error, check console for details');
       return;
     }
 
     setLoading(true);
     try {
-      await api.post('/auth/register', { username, password });
-      navigate('/login');
+      const res = await api.post('/auth/register', { username, password });
+      if (res.status === 201 || res.status === 200) {
+        navigate('/login');
+      } else {
+        setError('Unexpected response from server');
+      }
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed');
+      // eslint-disable-next-line no-console
+      console.error('Register request error', err);
+      const message =
+        err?.response?.data?.error ||
+        err?.message ||
+        'Registration failed, see console for details';
+      setError(message);
     } finally {
       setLoading(false);
     }

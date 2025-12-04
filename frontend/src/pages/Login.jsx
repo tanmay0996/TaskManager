@@ -29,7 +29,7 @@ export default function Login() {
     setError('');
     setFieldErrors({});
 
-    // Zod validation
+    // Zod validation (only block when there are real issues)
     try {
       loginSchema.parse({ username, password });
     } catch (err) {
@@ -43,7 +43,9 @@ export default function Login() {
         setFieldErrors(errors);
         return;
       }
-      console.error('Login validation error', err);
+      // eslint-disable-next-line no-console
+      console.error('Login validation error (non-Zod)', err);
+      setError('Unexpected validation error, check console for details');
       return;
     }
 
@@ -52,14 +54,24 @@ export default function Login() {
       const res = await api.post('/auth/login', { username, password });
       const token = res.data?.token;
       if (token) {
-        localStorage.setItem('token', token);
+        try {
+          localStorage.setItem('token', token);
+        } catch {
+          // ignore storage errors (e.g. in tests)
+        }
         const from = location.state?.from?.pathname || '/';
         navigate(from, { replace: true });
       } else {
-        setError('No token returned');
+        setError('No token returned from server');
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
+      // eslint-disable-next-line no-console
+      console.error('Login request error', err);
+      const message =
+        err?.response?.data?.error ||
+        err?.message ||
+        'Login failed, see console for details';
+      setError(message);
     } finally {
       setLoading(false);
     }
