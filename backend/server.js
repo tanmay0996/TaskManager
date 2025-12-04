@@ -13,12 +13,26 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 const MONGO_URI = process.env.MONGO_URI;
 
-// Middleware
+// Allow both local dev and deployed frontend
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://taskmanager-1-n8es.onrender.com'
+];
+
 app.use(
   cors({
-    origin: 'http://localhost:5173'
+    origin(origin, callback) {
+      // allow REST tools / server-to-server with no origin
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error('Not allowed by CORS'));
+    }
   })
 );
+
 app.use(express.json());
 
 // Routes
