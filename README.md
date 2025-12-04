@@ -8,6 +8,12 @@ Minimal full-stack Task Manager application built with:
 
 ---
 
+# Demo Video
+
+🎥https://www.loom.com/share/4278377157824fdcb8d7ffddd9c4d044
+
+---
+
 ## 1. Project Structure
 
 - **`backend/`** – REST API (authentication + task management)
@@ -126,7 +132,7 @@ Ensure the backend CORS allows your frontend origin. The backend is already conf
 
 ---
 
-## 4. Running Tests & Viewing Coverage
+## 4. Running Tests & Viewing Coverage Report
 
 ### 4.1 Backend Tests (Jest)
 
