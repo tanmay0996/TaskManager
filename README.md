@@ -8,6 +8,7 @@ Minimal full-stack Task Manager application built with:
 
 ---
 lets see
+lets see signed commit via gpg works or not
 
 # Demo Video
 
